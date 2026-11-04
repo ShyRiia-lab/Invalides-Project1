@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PetCare Tracker</title>
+    
+    <!-- Підключення Tailwind CSS без npm/JS інструментів -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Підключення іконок -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Бічне меню -->
+        <aside class="w-64 bg-white border-r hidden md:flex flex-col">
+            <div class="p-4 border-b font-bold text-xl text-blue-600">PetCare Tracker</div>
+            <nav class="flex-1 p-4 space-y-2">
+                <a asp-controller="Home" asp-action="Index" class="flex items-center p-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded">
+                    <i class="bi bi-grid-1x2 mr-2 text-lg"></i> Дашборд
+                </a>
+                <a asp-controller="Home" asp-action="Tracker" class="flex items-center p-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded">
+                    <i class="bi bi-calendar-event mr-2 text-lg"></i> Трекер подій
+                </a>
+                <a asp-controller="Account" asp-action="Login" class="flex items-center p-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded">
+                    <i class="bi bi-box-arrow-in-right mr-2 text-lg"></i> Авторизація
+                </a>
+            </nav>
+        </aside>
+
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Верхня шапка -->
+<header class="h-16 bg-white border-b flex items-center justify-between px-6">
+    <!-- Форма для пошуку -->
+    <form asp-controller="Home" asp-action="Index" method="get" class="flex items-center">
+        <input type="text" name="searchQuery" value="@ViewBag.SearchQuery" placeholder="Пошук за кличкою..." class="border border-gray-300 p-2 rounded-lg w-48 md:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <button type="submit" class="ml-2 bg-blue-50 text-blue-600 px-3 py-2 rounded-lg hover:bg-blue-100"><i class="bi bi-search"></i></button>
+    </form>
+    
+    <div class="space-x-2 flex">
+        <!-- Кнопкам даємо ID, щоб викликати їх через JavaScript -->
+        <button id="btnOpenAddModal" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">+ Додати</button>
+        <button id="btnToggleDelete" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">Видалити</button>
+    </div>
+</header>
+            
+            <!-- Основна частина, куди підвантажуються інші сторінки -->
+            <main class="flex-1 overflow-y-auto p-6">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+</body>
+</html>

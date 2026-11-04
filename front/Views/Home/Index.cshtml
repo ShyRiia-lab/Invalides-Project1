@@ -1,0 +1,141 @@
+﻿@model IEnumerable<front.Models.Pet>
+@{
+    ViewData["Title"] = "Дашборд";
+}
+
+<h1 class="text-2xl font-bold mb-6 text-gray-800">Головний довідник тварин</h1>
+
+<!-- Сітка карток -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    @foreach (var pet in Model)
+    {
+        <div class="relative bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col hover:shadow-lg transition transform hover:-translate-y-1 group">
+            
+            <!-- Кнопка видалення (з'являється при режимі видалення) -->
+            <form asp-action="DeletePet" method="post" class="delete-form hidden absolute top-2 right-2 z-10">
+                <input type="hidden" name="id" value="@pet.Id" />
+                <button type="submit" class="bg-red-600 text-white w-8 h-8 rounded-full hover:bg-red-700 shadow-md flex items-center justify-center font-bold">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </form>
+
+            <div onclick="openViewModal('@pet.Name', '@pet.Img', '@pet.Age', '@pet.Diet', '@pet.Allergies', '@pet.Diseases', '@pet.GeneralInfo')" class="cursor-pointer flex-1 flex flex-col">
+                <img src="@pet.Img" alt="@pet.Name" class="h-48 w-full object-cover" />
+                <div class="p-4 flex flex-col flex-1 pointer-events-none">
+                    <h2 class="text-xl font-semibold mb-4 text-center">@pet.Name</h2>
+                    <button class="mt-auto w-full bg-blue-50 text-blue-700 py-2 rounded-lg transition font-medium">Детальніше</button>
+                </div>
+            </div>
+        </div>
+    }
+    
+@if(!Model.Any())
+    {
+        <!-- Повідомлення про помилку, якщо пошук не дав результатів -->
+        <div class="col-span-full bg-red-50 text-red-600 p-6 rounded-lg border border-red-200 text-center flex flex-col items-center justify-center">
+            <i class="bi bi-search text-3xl mb-2"></i> 
+            <span class="text-lg font-bold">Помилка: Тварину не знайдено.</span>
+            <span class="text-sm mt-1">За вашим запитом "@ViewBag.SearchQuery" немає жодних записів.</span>
+        </div>
+    }
+</div>
+
+<!-- Модальне вікно: ПЕРЕГЛЯД ТВАРИНИ (завдання 1 та 2) -->
+<div id="viewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg w-11/12 md:w-3/4 max-w-4xl overflow-hidden relative flex flex-col max-h-[90vh]">
+        <button onclick="closeModals()" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 z-10 bg-white bg-opacity-70 rounded-full p-1"><i class="bi bi-x-circle-fill text-2xl"></i></button>
+        <div class="flex flex-col md:flex-row flex-1 overflow-y-auto">
+            <div class="md:w-1/2 bg-gray-100 flex items-center justify-center">
+                <img id="viewImg" src="" alt="Pet" class="w-full h-64 md:h-full object-cover" />
+            </div>
+            <div class="p-6 md:p-8 md:w-1/2 flex flex-col bg-white">
+                <h2 id="viewName" class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2"></h2>
+                <div class="space-y-4 text-gray-700 text-lg flex-1">
+                    <div><span class="font-bold">Вік:</span> <span id="viewAge"></span></div>
+                    <div><span class="font-bold">Дієта:</span> <span id="viewDiet"></span></div>
+                    <div><span class="font-bold">Алергії:</span> <span id="viewAllergies"></span></div>
+                    <div><span class="font-bold">Хвороби:</span> <span id="viewDiseases"></span></div>
+                    <div><span class="font-bold block">Загальна інформація:</span> <span id="viewGeneralInfo" class="text-sm text-gray-600"></span></div>
+                </div>
+                <!-- Кнопковий перехід у трекер -->
+                <a asp-controller="Home" asp-action="Tracker" class="mt-8 text-center bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 font-bold block">Відкрити трекер</a>
+            </div>
+        </div>
+    </div>
+</div>
+@* 
+<!-- Модальне вікно: ДОДАВАННЯ (завдання 3 - Введення з клавіатури) -->
+<div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg w-11/12 max-w-2xl p-6 relative">
+        <button onclick="closeModals()" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 z-10"><i class="bi bi-x-circle-fill text-2xl"></i></button>
+        <h2 class="text-2xl font-bold mb-4">Додати нову тварину</h2>
+        
+        <form asp-action="AddPet" method="post" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div><label class="block font-semibold">Кличка</label><input type="text" name="Name" required class="w-full border p-2 rounded" /></div>
+                <div><label class="block font-semibold">Вік</label><input type="text" name="Age" required class="w-full border p-2 rounded" /></div>
+                <div><label class="block font-semibold">Дієта</label><input type="text" name="Diet" class="w-full border p-2 rounded" /></div>
+                <div><label class="block font-semibold">Алергії</label><input type="text" name="Allergies" class="w-full border p-2 rounded" /></div>
+                <div class="md:col-span-2"><label class="block font-semibold">Хвороби</label><input type="text" name="Diseases" class="w-full border p-2 rounded" /></div>
+                <div class="md:col-span-2"><label class="block font-semibold">Загальна інформація</label><textarea name="GeneralInfo" class="w-full border p-2 rounded"></textarea></div>
+                <div class="md:col-span-2"><label class="block font-semibold">Посилання на фото (URL - необов'язково)</label><input type="text" name="Img" class="w-full border p-2 rounded" /></div>
+            </div>
+            <button type="submit" class="w-full bg-green-600 text-white font-bold py-2 rounded mt-4 hover:bg-green-700">Зберегти</button>
+        </form>
+    </div>
+</div> *@
+<!-- Модальне вікно: ДОДАВАННЯ (завдання 3 - Введення з клавіатури) -->
+<div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg w-11/12 max-w-2xl p-6 relative">
+        <button onclick="closeModals()" class="absolute top-4 right-4 text-gray-500 hover:text-red-500 z-10"><i class="bi bi-x-circle-fill text-2xl"></i></button>
+        <h2 class="text-2xl font-bold mb-4">Додати нову тварину</h2>
+        
+        <!-- Вбудований компонент, розроблений тестувальником -->
+        <partial name="_CreatePetComponent" />
+        
+    </div>
+</div>
+<script>
+    // Відображення вікна ПЕРЕГЛЯДУ
+    function openViewModal(name, img, age, diet, allergies, diseases, generalInfo) {
+        document.getElementById('viewName').innerText = name;
+        document.getElementById('viewImg').src = img;
+        document.getElementById('viewAge').innerText = age;
+        document.getElementById('viewDiet').innerText = diet;
+        document.getElementById('viewAllergies').innerText = allergies;
+        document.getElementById('viewDiseases').innerText = diseases;
+        document.getElementById('viewGeneralInfo').innerText = generalInfo;
+        
+        document.getElementById('viewModal').classList.remove('hidden');
+        document.getElementById('viewModal').classList.add('flex');
+    }
+
+    // Закриття всіх модалок
+    function closeModals() {
+        document.getElementById('viewModal').classList.add('hidden');
+        document.getElementById('addModal').classList.add('hidden');
+    }
+
+    // Підключення кнопок з Шапки (_Layout.cshtml)
+    document.addEventListener("DOMContentLoaded", () => {
+        // Кнопка "Додати"
+        const btnAdd = document.getElementById('btnOpenAddModal');
+        if (btnAdd) {
+            btnAdd.addEventListener('click', () => {
+                document.getElementById('addModal').classList.remove('hidden');
+                document.getElementById('addModal').classList.add('flex');
+            });
+        }
+
+        // Кнопка "Видалити" (Вмикає/вимикає червоні хрестики на картках)
+        const btnDelete = document.getElementById('btnToggleDelete');
+        if (btnDelete) {
+            btnDelete.addEventListener('click', () => {
+                document.querySelectorAll('.delete-form').forEach(form => {
+                    form.classList.toggle('hidden');
+                });
+                btnDelete.classList.toggle('bg-red-800'); // Зміна кольору кнопки при активному режимі
+            });
+        }
+    });
+</script>

@@ -1,0 +1,20 @@
+﻿<!-- Компонент формы создания (розроблений тестувальником) -->
+<form asp-controller="Home" asp-action="AddPet" method="post" class="space-y-4 bg-indigo-50 p-5 rounded-lg border border-indigo-100 shadow-inner">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <label class="block font-semibold text-sm text-indigo-900">Кличка *</label>
+            <input type="text" name="Name" required class="w-full border p-2 rounded focus:ring-indigo-500" placeholder="Наприклад, Мурка" />
+        </div>
+        <div>
+            <label class="block font-semibold text-sm text-indigo-900">Вік *</label>
+            <input type="text" name="Age" required class="w-full border p-2 rounded focus:ring-indigo-500" placeholder="Наприклад, 2 роки" />
+        </div>
+        <div class="md:col-span-2">
+            <label class="block font-semibold text-sm text-indigo-900">Загальна інформація</label>
+            <textarea name="GeneralInfo" rows="2" class="w-full border p-2 rounded focus:ring-indigo-500" placeholder="Особливості характеру..."></textarea>
+        </div>
+    </div>
+    <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-2 rounded hover:bg-indigo-700 transition">
+        Створити запис
+    </button>
+</form>

@@ -1,0 +1,173 @@
+﻿@{
+    ViewData["Title"] = "Трекер подій";
+    string petName = "Барсік"; // У майбутньому це передаватиметься з бази
+}
+
+<div class="max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-100">
+    
+    <!-- Заголовок з кличкою та вибір дати (стрілочки) -->
+    <div class="flex flex-col md:flex-row items-center justify-between border-b pb-4 mb-8">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">
+            Трекер: <span class="text-blue-600">@petName</span>
+        </h1>
+        
+        <div class="flex items-center space-x-4 bg-gray-50 px-4 py-2 rounded-lg border">
+            <button class="text-gray-500 hover:text-blue-600 transition"><i class="bi bi-chevron-left text-xl"></i></button>
+            <span class="font-semibold text-lg text-gray-700 min-w-[120px] text-center">Сьогодні</span>
+            <button class="text-gray-500 hover:text-blue-600 transition"><i class="bi bi-chevron-right text-xl"></i></button>
+        </div>
+    </div>
+
+    <!-- Інтерактивні елементи Трекера -->
+    <form id="trackerForm" class="space-y-8">
+        
+        <!-- Блок чекбоксів: Годування та Ліки -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-blue-50 p-5 rounded-xl border border-blue-100">
+                <h3 class="font-bold text-lg mb-4 flex items-center text-blue-900">
+                    <i class="bi bi-egg-fried mr-2 text-yellow-500"></i> Годування
+                </h3>
+                <div class="space-y-3">
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" name="fedMorning" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 tracker-input" />
+                        <span class="text-gray-700 font-medium">Ранкова порція</span>
+                    </label>
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" name="fedEvening" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 tracker-input" />
+                        <span class="text-gray-700 font-medium">Вечірня порція</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="bg-red-50 p-5 rounded-xl border border-red-100">
+                <h3 class="font-bold text-lg mb-4 flex items-center text-red-900">
+                    <i class="bi bi-capsule mr-2 text-red-500"></i> Ліки / Процедури
+                </h3>
+                <div class="space-y-3">
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" name="medication" class="w-5 h-5 text-red-600 rounded focus:ring-red-500 tracker-input" />
+                        <span class="text-gray-700 font-medium">Дати вітаміни / таблетку</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Інпут для часу прогулянки -->
+        <div>
+            <label class="block font-bold text-gray-800 mb-2 flex items-center">
+                <i class="bi bi-clock-history mr-2 text-green-500"></i> Час активності / прогулянки (хвилин)
+            </label>
+            <input type="number" name="walkTime" placeholder="Наприклад, 45" class="w-full md:w-1/3 border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 tracker-input" />
+        </div>
+
+        <!-- Поле для нотаток -->
+        <div>
+            <label class="block font-bold text-gray-800 mb-2 flex items-center">
+                <i class="bi bi-journal-text mr-2 text-purple-500"></i> Нотатки на день
+            </label>
+            <textarea name="notes" rows="3" placeholder="Опишіть самопочуття, настрій чи поведінку..." class="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 tracker-input"></textarea>
+        </div>
+        <!-- Спінер (за замовчуванням прихований класом hidden) -->
+<div id="apiLoader" class="hidden flex items-center text-blue-600 mr-4">
+    <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+    Завантаження...
+</div>
+        <!-- Панель збереження (кнопка та індикатор) -->
+        <div class="flex justify-end items-center border-t pt-4">
+            <span id="saveStatus" class="text-sm font-medium mr-4 opacity-0 transition-opacity duration-300"></span>
+            <button type="button" onclick="sendDataToApi()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition shadow-md">
+                Зберегти
+            </button>
+        </div>
+    </form>
+</div>
+<!-- Календарна сітка (1-31 число) зі статусами -->
+<div class="mt-10 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+    <h3 class="text-lg font-bold mb-4 flex items-center">
+        <i class="bi bi-calendar-month mr-2 text-blue-500"></i> Прогрес за поточний місяць
+    </h3>
+    
+    <div class="overflow-x-auto w-full pb-2">
+    <!-- Добавлен min-w-[300px], чтобы ячейки не сплющивались на смартфонах -->
+    <div class="grid grid-cols-7 gap-2 md:gap-4 text-center min-w-[350px]">
+        @for (int i = 1; i <= 31; i++)
+        {
+            // Імітація статусів: кожен другий день зелений, інші сірі
+            bool isCompleted = (i % 2 == 0); 
+            string bgClass = isCompleted ? "bg-green-50 border-green-300 text-green-700" : "bg-gray-50 border-gray-200 text-gray-400";
+            string iconClass = isCompleted ? "bi-check-circle-fill text-green-500" : "bi-dash-circle text-gray-300";
+
+            <div class="p-2 border rounded-lg flex flex-col items-center @bgClass">
+                <span class="font-bold text-lg">@i</span>
+                <i class="bi @iconClass text-sm mt-1"></i>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- JavaScript: Обробка та відправка на API -->
+<script>
+    // Вішаємо слухач подій на всі інпути: при будь-якому кліку чи вводі викликаємо збереження
+document.querySelectorAll('.tracker-input').forEach(input => {
+    input.addEventListener('change', () => {
+        sendDataToApi();
+    });
+});
+
+async function sendDataToApi() {
+    const statusEl = document.getElementById('saveStatus');
+    const loaderEl = document.getElementById('apiLoader'); // Знаходимо лоадер
+    
+    // Показуємо лоадер і ховаємо статус
+    statusEl.textContent = 'Збереження...';
+    statusEl.className = 'text-sm font-medium mr-4 text-gray-500 opacity-100 transition-opacity duration-300';
+    loaderEl.classList.remove('hidden'); 
+    loaderEl.classList.add('flex');
+
+    // Збираємо дані з форми
+    const payload = {
+        fedMorning: document.querySelector('[name="fedMorning"]').checked,
+        fedEvening: document.querySelector('[name="fedEvening"]').checked,
+        medication: document.querySelector('[name="medication"]').checked,
+        walkTime: document.querySelector('[name="walkTime"]').value,
+        notes: document.querySelector('[name="notes"]').value
+    };
+
+    try {
+        // Відправляємо POST-запит на наш ASP.NET API
+        const response = await fetch('/Home/SaveTrackerData', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            // Успіх
+            statusEl.textContent = 'Дані збережено!';
+            statusEl.classList.remove('text-gray-500');
+            statusEl.classList.add('text-green-600');
+        } else {
+            throw new Error('Помилка HTTP');
+        }
+    } catch (error) {
+        // Помилка
+        console.error('Помилка відправки на API:', error);
+        statusEl.textContent = 'Помилка збереження';
+        statusEl.classList.remove('text-gray-500');
+        statusEl.classList.add('text-red-500');
+    }
+
+    // Ховаємо лоадер
+    loaderEl.classList.add('hidden');
+    loaderEl.classList.remove('flex');
+
+    // Ховаємо напис статусу через 2 секунди
+    setTimeout(() => {
+        statusEl.classList.remove('opacity-100');
+        statusEl.classList.add('opacity-0');
+    }, 2000);
+}
+</script>
