@@ -1,0 +1,5 @@
+@host = https://localhost:7267
+
+### Список тварин
+GET {{host}}/api/pets
+Accept: application/json
